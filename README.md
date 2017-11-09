@@ -2,6 +2,7 @@
 [![GoDoc](https://godoc.org/github.com/joshdk/quantize?status.svg)](https://godoc.org/github.com/joshdk/quantize)
 [![Go Report Card](https://goreportcard.com/badge/github.com/joshdk/quantize)](https://goreportcard.com/report/github.com/joshdk/quantize)
 [![CircleCI](https://circleci.com/gh/joshdk/quantize.svg?&style=shield)](https://circleci.com/gh/joshdk/quantize/tree/master)
+[![CodeCov](https://codecov.io/gh/joshdk/quantize/branch/master/graph/badge.svg)](https://codecov.io/gh/joshdk/quantize)
 
 # Quantize
 
