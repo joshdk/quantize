@@ -1,0 +1,14 @@
+products:
+  quantize:
+    build:
+      output-dir: ./build/bin
+      main-pkg: ./cmd
+      os-archs:
+        - os: darwin
+          arch: amd64
+        - os: linux
+          arch: amd64
+    dist:
+      output-dir: ./build/dist
+      dist-type:
+        type: os-arch-bin

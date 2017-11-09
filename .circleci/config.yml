@@ -1,0 +1,13 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/joshdk/quantize
+    steps:
+      - checkout
+      - run: sudo env GOOS=darwin GOARCH=amd64 $(which go) install std
+      - run: ./godelw version
+      - run: ./godelw verify --apply=false
+      - run: ./godelw dist
