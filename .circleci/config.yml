@@ -10,4 +10,6 @@ jobs:
       - run: sudo env GOOS=darwin GOARCH=amd64 $(which go) install std
       - run: ./godelw version
       - run: ./godelw verify --apply=false
+      - run: ./godelw test cover --coverage-output=coverage.txt
+      - run: bash <(curl -s https://codecov.io/bash)
       - run: ./godelw dist
