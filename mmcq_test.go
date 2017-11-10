@@ -207,3 +207,116 @@ func TestSpread(t *testing.T) {
 	}
 
 }
+
+func TestPartition(t *testing.T) {
+
+	tests := []struct {
+		title  string
+		pixels []color.RGBA
+		left   []color.RGBA
+		right  []color.RGBA
+	}{
+		{
+			title:  "no pixels",
+			pixels: []color.RGBA{},
+			left:   []color.RGBA{},
+			right:  []color.RGBA{},
+		},
+		{
+			title: "one pixel",
+			pixels: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+			left: []color.RGBA{},
+			right: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "two pixel",
+			pixels: []color.RGBA{
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+			},
+			left: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+			right: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "partition by red",
+			pixels: []color.RGBA{
+				{21, 0, 0, 0xFF},
+				{15, 5, 5, 0xFF},
+				{10, 10, 10, 0xFF},
+				{5, 15, 15, 0xFF},
+				{0, 20, 20, 0xFF},
+			},
+			left: []color.RGBA{
+				{0, 20, 20, 0xFF},
+				{5, 15, 15, 0xFF},
+			},
+			right: []color.RGBA{
+				{10, 10, 10, 0xFF},
+				{15, 5, 5, 0xFF},
+				{21, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "partition by green",
+			pixels: []color.RGBA{
+				{0, 21, 0, 0xFF},
+				{5, 15, 5, 0xFF},
+				{10, 10, 10, 0xFF},
+				{15, 5, 15, 0xFF},
+				{20, 0, 20, 0xFF},
+			},
+			left: []color.RGBA{
+				{20, 0, 20, 0xFF},
+				{15, 5, 15, 0xFF},
+			},
+			right: []color.RGBA{
+				{10, 10, 10, 0xFF},
+				{5, 15, 5, 0xFF},
+				{0, 21, 0, 0xFF},
+			},
+		},
+		{
+			title: "partition by blue",
+			pixels: []color.RGBA{
+				{0, 0, 21, 0xFF},
+				{5, 5, 15, 0xFF},
+				{10, 10, 10, 0xFF},
+				{15, 15, 5, 0xFF},
+				{20, 20, 0, 0xFF},
+			},
+			left: []color.RGBA{
+				{20, 20, 0, 0xFF},
+				{15, 15, 5, 0xFF},
+			},
+			right: []color.RGBA{
+				{10, 10, 10, 0xFF},
+				{5, 5, 15, 0xFF},
+				{0, 0, 21, 0xFF},
+			},
+		},
+	}
+
+	for index, test := range tests {
+		name := fmt.Sprintf("Case #%d - %s", index, test.title)
+
+		t.Run(name, func(t *testing.T) {
+
+			left, right := Partition(test.pixels)
+
+			assert.Equal(t, len(test.pixels), len(left)+len(right))
+
+			assert.Equal(t, test.left, left)
+			assert.Equal(t, test.right, right)
+
+		})
+	}
+
+}
