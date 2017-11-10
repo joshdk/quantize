@@ -7,6 +7,7 @@ package quantize
 import (
 	"fmt"
 	"image/color"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -202,6 +203,258 @@ func TestSpread(t *testing.T) {
 			assert.Equal(t, test.sr, sr)
 			assert.Equal(t, test.sg, sg)
 			assert.Equal(t, test.sb, sb)
+
+		})
+	}
+
+}
+
+func TestPartition(t *testing.T) {
+
+	tests := []struct {
+		title  string
+		pixels []color.RGBA
+		left   []color.RGBA
+		right  []color.RGBA
+	}{
+		{
+			title:  "no pixels",
+			pixels: []color.RGBA{},
+			left:   []color.RGBA{},
+			right:  []color.RGBA{},
+		},
+		{
+			title: "one pixel",
+			pixels: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+			left: []color.RGBA{},
+			right: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "two pixel",
+			pixels: []color.RGBA{
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+			},
+			left: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+			right: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "partition by red",
+			pixels: []color.RGBA{
+				{21, 0, 0, 0xFF},
+				{15, 5, 5, 0xFF},
+				{10, 10, 10, 0xFF},
+				{5, 15, 15, 0xFF},
+				{0, 20, 20, 0xFF},
+			},
+			left: []color.RGBA{
+				{0, 20, 20, 0xFF},
+				{5, 15, 15, 0xFF},
+			},
+			right: []color.RGBA{
+				{10, 10, 10, 0xFF},
+				{15, 5, 5, 0xFF},
+				{21, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "partition by green",
+			pixels: []color.RGBA{
+				{0, 21, 0, 0xFF},
+				{5, 15, 5, 0xFF},
+				{10, 10, 10, 0xFF},
+				{15, 5, 15, 0xFF},
+				{20, 0, 20, 0xFF},
+			},
+			left: []color.RGBA{
+				{20, 0, 20, 0xFF},
+				{15, 5, 15, 0xFF},
+			},
+			right: []color.RGBA{
+				{10, 10, 10, 0xFF},
+				{5, 15, 5, 0xFF},
+				{0, 21, 0, 0xFF},
+			},
+		},
+		{
+			title: "partition by blue",
+			pixels: []color.RGBA{
+				{0, 0, 21, 0xFF},
+				{5, 5, 15, 0xFF},
+				{10, 10, 10, 0xFF},
+				{15, 15, 5, 0xFF},
+				{20, 20, 0, 0xFF},
+			},
+			left: []color.RGBA{
+				{20, 20, 0, 0xFF},
+				{15, 15, 5, 0xFF},
+			},
+			right: []color.RGBA{
+				{10, 10, 10, 0xFF},
+				{5, 5, 15, 0xFF},
+				{0, 0, 21, 0xFF},
+			},
+		},
+	}
+
+	for index, test := range tests {
+		name := fmt.Sprintf("Case #%d - %s", index, test.title)
+
+		t.Run(name, func(t *testing.T) {
+
+			left, right := Partition(test.pixels)
+
+			assert.Equal(t, len(test.pixels), len(left)+len(right))
+
+			assert.Equal(t, test.left, left)
+			assert.Equal(t, test.right, right)
+
+		})
+	}
+
+}
+
+func TestPixels(t *testing.T) {
+
+	tests := []struct {
+		title   string
+		pixels  []color.RGBA
+		levels  int
+		palette []color.RGBA
+	}{
+		{
+			title:  "0 pixels zero levels",
+			pixels: []color.RGBA{},
+			levels: 0,
+			palette: []color.RGBA{
+				{0, 0, 0, 0xFF},
+			},
+		},
+		{
+			title:  "0 pixels 1 level",
+			pixels: []color.RGBA{},
+			levels: 1,
+			palette: []color.RGBA{
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+			},
+		},
+		{
+			title:  "0 pixels 3 levels",
+			pixels: []color.RGBA{},
+			levels: 3,
+			palette: []color.RGBA{
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "1 pixel 0 levels",
+			pixels: []color.RGBA{
+				{255, 0, 0, 0xFF},
+			},
+			levels: 0,
+			palette: []color.RGBA{
+				{255, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "1 pixel 1 level",
+			pixels: []color.RGBA{
+				{255, 0, 0, 0xFF},
+			},
+			levels: 1,
+			palette: []color.RGBA{
+				{0, 0, 0, 0xFF},
+				{255, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "1 pixel 3 levels",
+			pixels: []color.RGBA{
+				{255, 0, 0, 0xFF},
+			},
+			levels: 3,
+			palette: []color.RGBA{
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{0, 0, 0, 0xFF},
+				{255, 0, 0, 0xFF},
+			},
+		},
+		{
+			title: "order level 0",
+			pixels: []color.RGBA{
+				{8, 0, 0, 0xFF},
+				{0, 4, 0, 0xFF},
+				{8, 4, 0, 0xFF},
+				{0, 0, 6, 0xFF},
+			},
+			levels: 0,
+			palette: []color.RGBA{
+				{4, 2, 1, 0xFF},
+			},
+		},
+		{
+			title: "order level 1",
+			pixels: []color.RGBA{
+				{8, 0, 0, 0xFF},
+				{0, 4, 0, 0xFF},
+				{8, 4, 0, 0xFF},
+				{0, 0, 6, 0xFF},
+			},
+			levels: 1,
+			palette: []color.RGBA{
+				{0, 2, 3, 0xFF},
+				{8, 2, 0, 0xFF},
+			},
+		},
+		{
+			title: "order level 2",
+			pixels: []color.RGBA{
+				{8, 0, 0, 0xFF},
+				{0, 4, 0, 0xFF},
+				{8, 4, 0, 0xFF},
+				{0, 0, 6, 0xFF},
+			},
+			levels: 2,
+			palette: []color.RGBA{
+				{0, 4, 0, 0xFF},
+				{0, 0, 6, 0xFF},
+				{8, 0, 0, 0xFF},
+				{8, 4, 0, 0xFF},
+			},
+		},
+	}
+
+	for index, test := range tests {
+		name := fmt.Sprintf("Case #%d - %s", index, test.title)
+
+		t.Run(name, func(t *testing.T) {
+
+			palette := Pixels(test.pixels, test.levels)
+
+			assert.Equal(t, int(math.Pow(2, float64(test.levels))), len(palette))
+
+			assert.Equal(t, test.palette, palette)
 
 		})
 	}
