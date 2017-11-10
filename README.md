@@ -25,25 +25,33 @@ import (
 	"github.com/joshdk/quantize"
 )
 
-resp, err := http.Get("https://i.imgur.com/X9GB4Pu.jpg")
+// Fetch the source image
+resp, err := http.Get("https://blog.golang.org/gopher/plush.jpg")
 if err != nil {
 	panic(err.Error())
 }
 
+// Decode jpeg contents
 img, err := jpeg.Decode(resp.Body)
 if err != nil {
 	panic(err.Error())
 }
 
-colors := quantize.Image(img, 4)
+// Reduce image into a palette of 8 colors
+colors := quantize.Image(img, 3)
 
 palette := make([]color.Color, len(colors))
 for index, clr := range colors {
 	palette[index] = clr
 }
 
+// Display our new palette
 preview.Show(palette)
 ```
+
+As an example, we can reduce a photo of the Go Gopher ([source](https://blog.golang.org/gopher)) into a color palette.
+
+![gopher](https://user-images.githubusercontent.com/307183/32680695-b853367a-c620-11e7-8b43-547a413ec9fd.png)
 
 ## License
 
