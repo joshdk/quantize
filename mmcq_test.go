@@ -6,11 +6,18 @@ package quantize
 
 import (
 	"fmt"
+	"image"
 	"image/color"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"math"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMinMax(t *testing.T) {
@@ -451,6 +458,88 @@ func TestPixels(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 
 			palette := Pixels(test.pixels, test.levels)
+
+			assert.Equal(t, int(math.Pow(2, float64(test.levels))), len(palette))
+
+			assert.Equal(t, test.palette, palette)
+
+		})
+	}
+
+}
+
+func TestImage(t *testing.T) {
+
+	tests := []struct {
+		title   string
+		path    string
+		levels  int
+		palette []color.RGBA
+	}{
+		{
+			title:  "jpg file",
+			path:   "plush.jpg",
+			levels: 3,
+			palette: []color.RGBA{
+				{R: 0x13, G: 0x25, B: 0x5c, A: 0xff},
+				{R: 0x76, G: 0x5b, B: 0x4b, A: 0xff},
+				{R: 0x31, G: 0x52, B: 0x99, A: 0xff},
+				{R: 0x7f, G: 0x94, B: 0xb1, A: 0xff},
+				{R: 0xb9, G: 0x8c, B: 0x5f, A: 0xff},
+				{R: 0xd8, G: 0xcd, B: 0xbe, A: 0xff},
+				{R: 0xe5, G: 0xe1, B: 0xd8, A: 0xff},
+				{R: 0xf8, G: 0xf3, B: 0xe9, A: 0xff},
+			},
+		},
+		{
+			title:  "png file",
+			path:   "plush.png",
+			levels: 3,
+			palette: []color.RGBA{
+				{R: 0x14, G: 0x25, B: 0x5d, A: 0xff},
+				{R: 0x76, G: 0x5b, B: 0x4b, A: 0xff},
+				{R: 0x32, G: 0x52, B: 0x99, A: 0xff},
+				{R: 0x7f, G: 0x94, B: 0xb1, A: 0xff},
+				{R: 0xb9, G: 0x8c, B: 0x5f, A: 0xff},
+				{R: 0xd8, G: 0xcc, B: 0xbe, A: 0xff},
+				{R: 0xe3, G: 0xe2, B: 0xd9, A: 0xff},
+				{R: 0xf8, G: 0xf2, B: 0xe8, A: 0xff},
+			},
+		},
+		{
+			title:  "gif file",
+			path:   "plush.gif",
+			levels: 3,
+			palette: []color.RGBA{
+				{R: 0x13, G: 0x26, B: 0x5d, A: 0xff},
+				{R: 0x78, G: 0x5a, B: 0x49, A: 0xff},
+				{R: 0x31, G: 0x53, B: 0x9b, A: 0xff},
+				{R: 0x7f, G: 0x92, B: 0xae, A: 0xff},
+				{R: 0xb9, G: 0x8c, B: 0x5e, A: 0xff},
+				{R: 0xd9, G: 0xce, B: 0xbe, A: 0xff},
+				{R: 0xe2, G: 0xe1, B: 0xd9, A: 0xff},
+				{R: 0xf8, G: 0xf2, B: 0xe6, A: 0xff},
+			},
+		},
+	}
+
+	for index, test := range tests {
+		name := fmt.Sprintf("Case #%d - %s", index, test.title)
+
+		t.Run(name, func(t *testing.T) {
+
+			file, err := os.Open(path.Join("testdata", test.path))
+			require.Nil(t, err)
+			defer func() {
+				if err := file.Close(); err != nil {
+					panic(err.Error())
+				}
+			}()
+
+			img, _, err := image.Decode(file)
+			require.Nil(t, err)
+
+			palette := Image(img, test.levels)
 
 			assert.Equal(t, int(math.Pow(2, float64(test.levels))), len(palette))
 
